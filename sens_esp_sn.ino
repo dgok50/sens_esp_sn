@@ -23,23 +23,23 @@
 #define SECS_PER_DAY  (SECS_PER_HOUR * 24L)
 #define BUF_SIZE 2512
 #define RBUF_SIZE 512
-#define DHT22_PIN 5
 #define NAN -200
 #define RCOL 30
 #define TID 0
 #define HID 1
 #define S_MAX 100
 
-#define USE_SERIAL srlcd
-
 #define OFFSET 10                                           //LCD char offset
 
 const char *HOST_NAME = "SENS_ESP";
 const char *endl = "\n";
-const int fw_ver = 35;
-#define dataPin 12
-#define clockPin 14
-#define enablePin 13
+const int fw_ver = 36;
+
+//#define dataPin 12
+//#define clockPin 14
+//#define enablePin 13
+#define DHT22_PIN 5
+#define LED_PIN 12
 
 #define numberOfSeconds(_time_) (_time_ % SECS_PER_MIN)  
 #define numberOfMinutes(_time_) ((_time_ / SECS_PER_MIN) % SECS_PER_MIN) 
@@ -60,7 +60,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 float mqv=0, mq7=0, mq9=0, vin=0, mc_vcc=0, mc_temp=0, lux=0, esp_vcc=0, tmp=0, mqv5=0, mq9_5=0;
 float dht_temp=0, dht_hum=0, bmp_temp=0, bmp_pre=0, rdy=0, idht_temp=0, idht_hum=0, tidht_hum=0;
 float sdht_temp[S_MAX], sdht_hum[S_MAX], tidht_temp=0;
-unsigned int loop_i = 0, i=0, loop_u = 0, s_i=0;
+unsigned int loop_i = 0, i=0, loop_u = 0, s_i=0, led_bri = 1023;
 
 
 unsigned long tfs = 0, timecor;
@@ -132,73 +132,74 @@ const char *webPage ="<!DOCTYPE html>"
 " </body>\n"
 "</html>\n";
 
-ShiftRegLCD123 srlcd(dataPin, clockPin, enablePin, SRLCD123);
+//ShiftRegLCD123 srlcd(dataPin, clockPin, enablePin, SRLCD123);
 
 void setup() {
 
     Serial.begin(9600);   
     Serial.println("A1 SENS_ESP_ST");
     pinMode(5, INPUT);
+    pinMode(LED_PIN, OUTPUT);
     yield();
     bzero(cstr1, BUF_SIZE);
     bzero(replyb, RBUF_SIZE);
     for(int r=0;r<RCOL;r++){
 	  bzero(rdtmp[r],2);
     }
-    srlcd.begin(20,2);
-    srlcd.clear();
-    srlcd.setCursor(0,0);
-    srlcd.print(HOST_NAME);
-    srlcd.setCursor(0,1);
+    //srlcd.begin(20,2);
+    //srlcd.clear();
+    //srlcd.setCursor(0,0);
+    //srlcd.print(HOST_NAME);
+    //srlcd.setCursor(0,1);
     Serial.println("Starting esp.");
-    srlcd.print("Версия ");    
+    //srlcd.print("Версия ");    
 	sprintf(cstr1, "%d.%d.%d", fw_ver/100, (fw_ver%100)/10, fw_ver%10);
-    srlcd.print(cstr1);
+    //srlcd.print(cstr1);
     delay(1000);
     bzero(cstr1, BUF_SIZE);
-    srlcd.setCursor(0,1);
-    srlcd.print("От ");
-    srlcd.print(__TIME__"  ");
+    //srlcd.setCursor(0,1);
+    //srlcd.print("От ");
+    //srlcd.print(__TIME__"  ");
     delay(2000);
-    srlcd.setCursor(0,1);
-    srlcd.print("Запуск.              ");
-    srlcd.setCursor(OFFSET,0);
-    srlcd.print("WiFi");
+    //srlcd.setCursor(0,1);
+    //srlcd.print("Запуск.              ");
+    //srlcd.setCursor(OFFSET,0);
+    //srlcd.print("WiFi");
     Serial.println("WIFI");
     WiFi.begin();
     yield();
-    srlcd.setCursor(7,1);
-    srlcd.print(".");
-    srlcd.backlightOn();
-    srlcd.setCursor(OFFSET,0);
-    srlcd.print("SPIFS");
+    //srlcd.setCursor(7,1);
+    //srlcd.print(".");
+    //srlcd.backlightOn();
+    //srlcd.setCursor(OFFSET,0);
+    //srlcd.print("SPIFS");
     Serial.println("SPIFS");
     
     if(ESP.getResetS() == false || digitalRead(5) == LOW)
     {
         selfup=true;
         loop_en=false;
-        srlcd.setCursor(0,1);
-        srlcd.print("Ошибка посл выкл");
+        //srlcd.setCursor(0,1);
+        //srlcd.print("Ошибка посл выкл");
         delay(1000);
-        srlcd.setCursor(0,1);
-        srlcd.print("Принуд обн включено ");
+        //srlcd.setCursor(0,1);
+        //srlcd.print("Принуд обн включено ");
         delay(1000);
     }
     if(selfup == false) {
     if (!SPIFFS.begin()) {                                      //|| !digitalRead(BUT)) {
         Serial.println("Failed to mount file system");
         SPIFFS.format();
-        srlcd.setCursor(0,1);
-        srlcd.print("Форматирование SPIFS");
+        //srlcd.setCursor(0,1);
+        //srlcd.print("Форматирование SPIFS");
       }
 
-    srlcd.setCursor(OFFSET,0);
-    srlcd.print("W СБРОС С1");
+    //srlcd.setCursor(OFFSET,0);
+    //srlcd.print("W СБРОС С1");
     yield();
     Serial.println("W СБРС");
-    srlcd.setCursor(8,1);
-    srlcd.print(".");
+    //srlcd.setCursor(8,1);
+    //srlcd.print(".");
     yield();
 
     WiFi.disconnect();
@@ -206,54 +207,54 @@ void setup() {
     delay(200);
     yield();
 
-    srlcd.setCursor(OFFSET,0);
-    srlcd.print("ЗАГР КОНФ ");
+    //srlcd.setCursor(OFFSET,0);
+    //srlcd.print("ЗАГР КОНФ ");
     Serial.println("CFG L");
     yield();
-    srlcd.setCursor(9,1);
-    srlcd.print(".");
+    //srlcd.setCursor(9,1);
+    //srlcd.print(".");
 	byte bmac[6];
 	WiFi.macAddress(bmac);
 	bzero(mac, 20);
 	sprintf(mac, "%X-%X-%X-%X-%X-%X", bmac[0], bmac[1], bmac[2], bmac[3], bmac[4], bmac[5]);
     if (!loadConfig()) {
-        srlcd.setCursor(0,1);
-        srlcd.print("ОШИБКА, СБРОС");
+        //srlcd.setCursor(0,1);
+        //srlcd.print("ОШИБКА, СБРОС");
         SPIFFS.remove("/config.json");
         if (!saveConfig()) {
-    	    srlcd.setCursor(0,1);
-    	    srlcd.print("НЕ ВОЗМОЖНО СОХР КОНФ");
+    	    //srlcd.setCursor(0,1);
+    	    //srlcd.print("НЕ ВОЗМОЖНО СОХР КОНФ");
             Serial.println("Failed to save config");
             SPIFFS.format();
 			} 
 		else {
-    	      srlcd.setCursor(0,1);
-    	      srlcd.print("УСП СОХР КОНФ");
+    	      //srlcd.setCursor(0,1);
+    	      //srlcd.print("УСП СОХР КОНФ");
               Serial.println("Config saved");
             }
         Serial.println("Failed to load config");
       } 
 
-    srlcd.setCursor(OFFSET,0);
+    //srlcd.setCursor(OFFSET,0);
     Serial.println("W STA ");
-    srlcd.print("W СБРОС С2");
-    srlcd.setCursor(10,1);
-    srlcd.print(".");
+    //srlcd.print("W СБРОС С2");
+    //srlcd.setCursor(10,1);
+    //srlcd.print(".");
     }
     WiFi.mode(WIFI_OFF);
     delay(100);
     WiFi.mode(WIFI_STA);
     WiFi.disconnect(false);
-    srlcd.setCursor(11,1);
-    srlcd.print(".");
+    //srlcd.setCursor(11,1);
+    //srlcd.print(".");
     WiFi.setAutoReconnect (true);
     delay(100);
-    srlcd.setCursor(12,1);
-    srlcd.print(".");
-    srlcd.setCursor(OFFSET,0);
-    srlcd.print("WAN КЛИЕНТ");
-    srlcd.setCursor(0,1);
-    srlcd.print("ПОПЫТКА ПОДКЛЮЧЕНИЯ ");
+    //srlcd.setCursor(12,1);
+    //srlcd.print(".");
+    //srlcd.setCursor(OFFSET,0);
+    //srlcd.print("WAN КЛИЕНТ");
+    //srlcd.setCursor(0,1);
+    //srlcd.print("ПОПЫТКА ПОДКЛЮЧЕНИЯ ");
     WiFi.hostname(HOST_NAME);
     WiFi.begin("A1 Net", "84992434219");
     int t = 0;
@@ -262,10 +263,10 @@ void setup() {
         Serial.print(".");
         t++;
         if (t == 20) {
-            srlcd.setCursor(OFFSET,0);
-            srlcd.print("WAN ТД    ");
-            srlcd.setCursor(0,1);
-            srlcd.print("ПРЕРХОД В РЕЖИМ ТД  ");
+            //srlcd.setCursor(OFFSET,0);
+            //srlcd.print("WAN ТД    ");
+            //srlcd.setCursor(0,1);
+            //srlcd.print("ПРЕРХОД В РЕЖИМ ТД  ");
             loop_en=false;
             WiFi.softAP(HOST_NAME, password);
             IPAddress myIP = WiFi.softAPIP();
@@ -275,11 +276,11 @@ void setup() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
-    srlcd.setCursor(OFFSET,0);
+    //srlcd.setCursor(OFFSET,0);
 	dht.begin();
-    srlcd.print("ЗАПУСК WEB");
-    srlcd.setCursor(0,1);
-    srlcd.print("Запуск сервера  ");
+    //srlcd.print("ЗАПУСК WEB");
+    //srlcd.setCursor(0,1);
+    //srlcd.print("Запуск сервера  ");
 	
     server.on("/", []() {
         server.send(200, "text/html", webPage);
@@ -419,13 +420,13 @@ void setup() {
 
     server.begin();
     httpUpdater.setup(&server);
-    srlcd.setCursor(OFFSET,0);
-    srlcd.print("НОРМ РЕЖИМ");
-    srlcd.setCursor(0,1);
-    srlcd.print("ПРЕХОД В НОРМ РЕЖИМ ");
+    //srlcd.setCursor(OFFSET,0);
+    //srlcd.print("НОРМ РЕЖИМ");
+    //srlcd.setCursor(0,1);
+    //srlcd.print("ПРЕХОД В НОРМ РЕЖИМ ");
     udp.begin(localPort);
-    srlcd.setCursor(0,1);
-    srlcd.print("Запуск ntp          ");
+    //srlcd.setCursor(0,1);
+    //srlcd.print("Запуск ntp          ");
 
     WiFi.hostByName(ntpServerName, timeServerIP); 
     sendNTPpacket(timeServerIP);                                // send an NTP packet to a time server
@@ -441,7 +442,7 @@ void setup() {
         timecor = timecor - (millis()/1000);
       }
     udp.stop();
-    srlcd.clear();
+    //srlcd.clear();
 	data_collect.attach(5, getd);
 	data_send_tic.attach(300, data_send_f);
   }
@@ -543,45 +544,45 @@ void loop() {
     
     if(selfup==true) {
         ESP.wdtDisable();
-        srlcd.clear();
-        srlcd.setCursor(0,0);
+        //srlcd.clear();
+        //srlcd.setCursor(0,0);
         ESPhttpUpdate.rebootOnUpdate(false);
-        srlcd.print("Запуск обновления... ");
+        //srlcd.print("Запуск обновления... ");
         delay(2000);
         t_httpUpdate_return ret = ESPhttpUpdate.update("http://dev.a1mc.ru/rom/esp8266/sens/flash.bin");
-        srlcd.setCursor(0,1);
+        //srlcd.setCursor(0,1);
         switch(ret) {
             case HTTP_UPDATE_FAILED:
-                srlcd.print("Ошибка обновления:  ");
+                //srlcd.print("Ошибка обновления:  ");
                 delay(2000);
-                srlcd.print(ESPhttpUpdate.getLastErrorString().c_str());
+                //srlcd.print(ESPhttpUpdate.getLastErrorString().c_str());
                 break;
 
             case HTTP_UPDATE_NO_UPDATES:
-                srlcd.print("Обн. не требуется   ");
+                //srlcd.print("Обн. не требуется   ");
                 break;
 
             case HTTP_UPDATE_OK:
-                srlcd.print("Обновлено успешно   ");
+                //srlcd.print("Обновлено успешно   ");
                 delay(2000);
-                srlcd.setCursor(0,1);
-                srlcd.print("Перезагружаюсь...   ");
+                //srlcd.setCursor(0,1);
+                //srlcd.print("Перезагружаюсь...   ");
                 delay(2000);
                 ESP.restart();
                 break;
         }
         selfup=false;
         delay(2000);
-        srlcd.clear();
+        //srlcd.clear();
         loop_en = true;
     }
     if(loop_en == true) {
         //if(dht_ok == 1){
 		if(loop_u_new==1){
 			loop_u_new=0;
-            srlcd.setCursor(0,1);
+            //srlcd.setCursor(0,1);
             char sm[2] = {' ', ' '};
-            srlcd.setCursor(0,1);
+            //srlcd.setCursor(0,1);
             yield();
             if(loop_u==1){
                 if(dht_hum > 98){
@@ -615,48 +616,48 @@ void loop() {
                 loop_u=0;
               }
 			if(loop_u_new==0) {
-				srlcd.print(cstr1);
-				srlcd.writecode(sm[0]);
-				srlcd.writecode(sm[1]);
+				//srlcd.print(cstr1);
+				//srlcd.writecode(sm[0]);
+				//srlcd.writecode(sm[1]);
 				for( i=strlen(cstr1); i <= 22; i++)
 				{
-					srlcd.write(' ');
+					//srlcd.write(' ');
 				}
 			}
 			loop_u_new=0;
           }
         yield();
         unsigned long secsSince1900 = timecor + (millis()/1000);
-        srlcd.setCursor(18,0);
+        //srlcd.setCursor(18,0);
         switch(get_signal_qua(6, 0))
         {
             case 0:
-            srlcd.writecode(0x80);
-            srlcd.writecode(0x80);
+            //srlcd.writecode(0x80);
+            //srlcd.writecode(0x80);
                 break;
             case 1:
-            srlcd.writecode(0x81);
-            srlcd.writecode(0x80);
+            //srlcd.writecode(0x81);
+            //srlcd.writecode(0x80);
                 break;
             case 2:
-            srlcd.writecode(0x82);
-            srlcd.writecode(0x80);
+            //srlcd.writecode(0x82);
+            //srlcd.writecode(0x80);
                 break;
             case 3:
-            srlcd.writecode(0x83);
-            srlcd.writecode(0x80);
+            //srlcd.writecode(0x83);
+            //srlcd.writecode(0x80);
                 break;
             case 4:
-            srlcd.writecode(0x83);
-            srlcd.writecode(0x81);
+            //srlcd.writecode(0x83);
+            //srlcd.writecode(0x81);
                 break;
             case 5:
-            srlcd.writecode(0x83);
-            srlcd.writecode(0x82);
+            //srlcd.writecode(0x83);
+            //srlcd.writecode(0x82);
                 break;
             case 6:
-            srlcd.writecode(0x83);
-            srlcd.writecode(0x83);
+            //srlcd.writecode(0x83);
+            //srlcd.writecode(0x83);
                 break;
         }
         // now convert NTP time into everyday time:
@@ -664,10 +665,10 @@ void loop() {
         const unsigned long seventyYears = 2208988800UL;
         // subtract seventy years:
         unsigned long epoch = secsSince1900 - seventyYears;
-        srlcd.setCursor(0,0);
-		srlcd.print(dht.computeHeatIndex(idht_temp, idht_hum, false));
-        srlcd.setCursor(5,0);
-		srlcd.print(" ");
+        //srlcd.setCursor(0,0);
+		//srlcd.print(dht.computeHeatIndex(idht_temp, idht_hum, false));
+        //srlcd.setCursor(5,0);
+		//srlcd.print(" ");
         i=numberOfHours(epoch);
         i+=3;
         if(i>23) {
@@ -675,21 +676,43 @@ void loop() {
           }
         if ( i < 10 ) {
             // In the first 10 minutes of each hour, we'll want a leading '0'
-            srlcd.print('0');
-          }
-        srlcd.print(i);
-        srlcd.print(':');
+            //srlcd.print('0');
+        }
+        
+        if(i >= 6 && i <= 21)
+        {
+	    if(i == 6 || i == 21){
+		float mscof = (numberOfSeconds(epoch) * numberOfMinutes(epoch)) / 3600.0;
+		if(i == 6){
+		    led_bri = mscof * 1023;
+		}
+		else if(i == 21) {
+		    led_bri = 1023 - (mscof * 1023);
+		}
+	    }
+	    else {
+		led_bri = 1023;
+	    }
+        }
+        else {
+	    led_bri = 0;
+        }
+        
+        analogWrite(LED_PIN, led_bri);
+        
+        //srlcd.print(i);
+        //srlcd.print(':');
         if ( numberOfMinutes(epoch) < 10 ) {
             // In the first 10 minutes of each hour, we'll want a leading '0'
-            srlcd.print('0');
+            //srlcd.print('0');
           }
-        srlcd.print(numberOfMinutes(epoch));
-        srlcd.print(':');
+        //srlcd.print(numberOfMinutes(epoch));
+        //srlcd.print(':');
         if ( numberOfSeconds(epoch) < 10 ) {
             // In the first 10 seconds of each minute, we'll want a leading '0'
-            srlcd.print('0');
+            //srlcd.print('0');
           }
-        srlcd.print(numberOfSeconds(epoch));
+        //srlcd.print(numberOfSeconds(epoch));
       }
     loop_i++;
   }
@@ -697,8 +720,8 @@ void loop() {
 bool parse_A1DSP(char* tempstr) {
     //rx входная строка, rs колличество символов в строке, rc количество параметров
 	
-    /*srlcd.setCursor(OFFSET,0);
-    srlcd.print("ПАРС А1ПРО");
+    /*//srlcd.setCursor(OFFSET,0);
+    //srlcd.print("ПАРС А1ПРО");
 	delay(1000);*/
     bmp_ok=false;
     lux_ok=false;
@@ -726,8 +749,8 @@ bool parse_A1DSP(char* tempstr) {
 		name_mas[i] = (char *)malloc(15 * sizeof(char));
 	}
 	
-    /*srlcd.setCursor(OFFSET,0);
-    srlcd.print("РАЗД А1ПРО");
+    /*//srlcd.setCursor(OFFSET,0);
+    //srlcd.print("РАЗД А1ПРО");
 	delay(1000);*/
 	splint_rtoa(tempstr, strlen(tempstr), col, name_mas, dat_mas);
 	//return col;
@@ -782,10 +805,10 @@ bool parse_A1DSP(char* tempstr) {
 			}
 			else if (strcmp(name_mas[ilp], "RFWVER") == 0) {
 				if(dat_mas[ilp] > fw_ver){
-					srlcd.setCursor(0,1);
-					srlcd.print(dat_mas[ilp]);
-					srlcd.print(">");
-					srlcd.print(fw_ver);
+					//srlcd.setCursor(0,1);
+					//srlcd.print(dat_mas[ilp]);
+					//srlcd.print(">");
+					//srlcd.print(fw_ver);
 					delay(2000);
 					selfup=true;}
 			}
@@ -1046,10 +1069,10 @@ bool lcdbacklset(int bkl){
  switch (bkl) {
 	case 1:
 		lcdbackl=true;
-		srlcd.backlightOn();
+		//srlcd.backlightOn();
 		break;
        case 0:
-		srlcd.backlightOff();
+		//srlcd.backlightOff();
 		lcdbackl=false;
 		break;
 		}
