@@ -327,7 +327,7 @@ void setup() {
          "WiFi Status: %d\n"
          "SSID: %s\n"
          "RSSI: %d dbm\n"
-         "led_bri: %d"
+         "led_bri: %d\n"
          "data get: %d\n"
 		 "Repet send: %d\n"
 		 "Loop enable: %d\n"
