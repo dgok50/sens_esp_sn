@@ -327,6 +327,7 @@ void setup() {
          "WiFi Status: %d\n"
          "SSID: %s\n"
          "RSSI: %d dbm\n"
+         "led_bri: %d"
          "data get: %d\n"
 		 "Repet send: %d\n"
 		 "Loop enable: %d\n"
@@ -340,7 +341,7 @@ void setup() {
 		 ESP.getChipId(), ESP.getFlashChipId(), ESP.getFlashChipRealSize(), ESP.getFlashChipSize(), ESP.getFlashChipSpeed(),
 		 (ESP.getFlashChipMode() == FM_QIO ? "QIO" : ESP.getFlashChipMode() == FM_QOUT ? "QOUT" : ESP.getFlashChipMode() == FM_DIO ? "DIO" : ESP.getFlashChipMode() == FM_DOUT ? "DOUT" : "UNKNOWN"),
 		 ESP.getResetReason().c_str(), ESP.getResetS(), ESP.getResetInfo().c_str(), WiFi.status(),
-		 WiFi.SSID().c_str(), WiFi.RSSI(), data_get, repsend, loop_en, get_signal_qua(100, 0), replyb);
+		 WiFi.SSID().c_str(), WiFi.RSSI(), led_bri, data_get, repsend, loop_en, get_signal_qua(100, 0), replyb);
         server.send(200, "text/xhtml", cstr1);
         delay(1000);
       });
@@ -629,7 +630,7 @@ void loop() {
         yield();
         unsigned long secsSince1900 = timecor + (millis()/1000);
         //srlcd.setCursor(18,0);
-        switch(get_signal_qua(6, 0))
+/*        switch(get_signal_qua(6, 0))
         {
             case 0:
             //srlcd.writecode(0x80);
@@ -659,7 +660,7 @@ void loop() {
             //srlcd.writecode(0x83);
             //srlcd.writecode(0x83);
                 break;
-        }
+        } */
         // now convert NTP time into everyday time:
         // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
         const unsigned long seventyYears = 2208988800UL;
@@ -674,10 +675,10 @@ void loop() {
         if(i>23) {
             i-=24;
           }
-        if ( i < 10 ) {
+        //if ( i < 10 ) {
             // In the first 10 minutes of each hour, we'll want a leading '0'
             //srlcd.print('0');
-        }
+        //}
         
         if(i >= 6 && i <= 21)
         {
@@ -700,6 +701,7 @@ void loop() {
         
         analogWrite(LED_PIN, led_bri);
         
+        /*
         //srlcd.print(i);
         //srlcd.print(':');
         if ( numberOfMinutes(epoch) < 10 ) {
@@ -713,6 +715,7 @@ void loop() {
             //srlcd.print('0');
           }
         //srlcd.print(numberOfSeconds(epoch));
+        */
       }
     loop_i++;
   }
