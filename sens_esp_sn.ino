@@ -59,7 +59,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 float mqv=0, mq7=0, mq9=0, vin=0, mc_vcc=0, mc_temp=0, lux=0, esp_vcc=0, tmp=0, mqv5=0, mq9_5=0;
 float dht_temp=0, dht_hum=0, bmp_temp=0, bmp_pre=0, rdy=0, idht_temp=0, idht_hum=0, tidht_hum=0;
-float sdht_temp[S_MAX], sdht_hum[S_MAX], tidht_temp=0;
+float sdht_temp[S_MAX], sdht_hum[S_MAX], tidht_temp=0, mscof = 0;
 unsigned int loop_i = 0, i=0, loop_u = 0, s_i=0, led_bri = 1023;
 
 
@@ -328,6 +328,7 @@ void setup() {
          "SSID: %s\n"
          "RSSI: %d dbm\n"
          "led_bri: %d\n"
+         "led_cof: %f\n"
          "data get: %d\n"
 		 "Repet send: %d\n"
 		 "Loop enable: %d\n"
@@ -341,7 +342,7 @@ void setup() {
 		 ESP.getChipId(), ESP.getFlashChipId(), ESP.getFlashChipRealSize(), ESP.getFlashChipSize(), ESP.getFlashChipSpeed(),
 		 (ESP.getFlashChipMode() == FM_QIO ? "QIO" : ESP.getFlashChipMode() == FM_QOUT ? "QOUT" : ESP.getFlashChipMode() == FM_DIO ? "DIO" : ESP.getFlashChipMode() == FM_DOUT ? "DOUT" : "UNKNOWN"),
 		 ESP.getResetReason().c_str(), ESP.getResetS(), ESP.getResetInfo().c_str(), WiFi.status(),
-		 WiFi.SSID().c_str(), WiFi.RSSI(), led_bri, data_get, repsend, loop_en, get_signal_qua(100, 0), replyb);
+		 WiFi.SSID().c_str(), WiFi.RSSI(), led_bri, mscof, data_get, repsend, loop_en, get_signal_qua(100, 0), replyb);
         server.send(200, "text/xhtml", cstr1);
         delay(1000);
       });
@@ -683,7 +684,7 @@ void loop() {
         if(i >= 6 && i <= 21)
         {
             if(i == 6 || i == 21){
-                float mscof = (numberOfSeconds(epoch) * numberOfMinutes(epoch)) / 3600.0;
+                mscof = (numberOfSeconds(epoch) * numberOfMinutes(epoch)) / 3600.0;
                 if(i == 6){
                     led_bri = mscof * 1023;
                 }
