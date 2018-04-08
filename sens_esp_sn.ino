@@ -681,14 +681,14 @@ void loop() {
             //srlcd.print('0');
         //}
         
-        if(i >= 6 && i <= 21)
+        if(i >= 6 && i <= 22)
         {
-            if(i == 6 || i == 21){
+            if(i == 6 || i == 22){
                 mscof = (numberOfSeconds(epoch) * numberOfMinutes(epoch)) / 3600.0;
                 if(i == 6){
                     led_bri = mscof * 1023;
                 }
-                else if(i == 21) {
+                else if(i == 22) {
                     led_bri = 1023 - (mscof * 1023);
                 }
             }
