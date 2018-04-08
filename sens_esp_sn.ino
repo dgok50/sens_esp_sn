@@ -684,7 +684,7 @@ void loop() {
         if(i >= 6 && i <= 22)
         {
             if(i == 6 || i == 22){
-                mscof = (numberOfSeconds(epoch) * numberOfMinutes(epoch)) / 3600.0;
+                mscof = numberOfMinutes(epoch) / 60.0;
                 if(i == 6){
                     led_bri = mscof * 1023;
                 }
