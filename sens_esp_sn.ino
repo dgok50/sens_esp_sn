@@ -28,6 +28,9 @@
 #define TID 0
 #define HID 1
 #define S_MAX 100
+#define ON_H 6
+#define OFF_H 21
+
 
 #define OFFSET 10                                           //LCD char offset
 
@@ -681,14 +684,14 @@ void loop() {
             //srlcd.print('0');
         //}
         
-        if(i >= 6 && i <= 22)
+        if(i >= ON_H && i <= OFF_H)
         {
-            if(i == 6 || i == 22){
+            if(i == ON_H || i == OFF_H){
                 mscof = numberOfMinutes(epoch) / 60.0;
-                if(i == 6){
+                if(i == ON_H){
                     led_bri = mscof * 1023;
                 }
-                else if(i == 22) {
+                else if(i == OFF_H) {
                     led_bri = 1023 - (mscof * 1023);
                 }
             }
