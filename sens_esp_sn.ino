@@ -682,21 +682,21 @@ void loop() {
         
         if(i >= 6 && i <= 21)
         {
-	    if(i == 6 || i == 21){
-		float mscof = (numberOfSeconds(epoch) * numberOfMinutes(epoch)) / 3600.0;
-		if(i == 6){
-		    led_bri = mscof * 1023;
-		}
-		else if(i == 21) {
-		    led_bri = 1023 - (mscof * 1023);
-		}
-	    }
-	    else {
-		led_bri = 1023;
-	    }
+            if(i == 6 || i == 21){
+                float mscof = (numberOfSeconds(epoch) * numberOfMinutes(epoch)) / 3600.0;
+                if(i == 6){
+                    led_bri = mscof * 1023;
+                }
+                else if(i == 21) {
+                    led_bri = 1023 - (mscof * 1023);
+                }
+            }
+            else {
+                led_bri = 1023;
+            }
         }
         else {
-	    led_bri = 0;
+            led_bri = 0;
         }
         
         analogWrite(LED_PIN, led_bri);
