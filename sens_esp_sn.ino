@@ -36,7 +36,8 @@
 
 const char *HOST_NAME = "SENS_ESP";
 const char *endl = "\n";
-const int fw_ver = 36;
+bool on_boot = true;
+const int fw_ver = 37;
 
 //#define dataPin 12
 //#define clockPin 14
@@ -66,9 +67,9 @@ float sdht_temp[S_MAX], sdht_hum[S_MAX], tidht_temp=0, mscof = 0;
 unsigned int loop_i = 0, i=0, loop_u = 0, s_i=0, led_bri = 1023;
 
 
-unsigned long tfs = 0, timecor;
+unsigned long epoch = 0, tfs = 0, timecor;
 
-volatile bool bmp_ok=false, lux_ok=false, dht_ok=false, data_rec=false, idht_ok=false;
+volatile bool bmp_ok=false, lux_ok=false, dht_ok=false, data_rec=false, idht_ok=false, narodmon_nts = false;
 volatile bool ispmode = false, drq = false, send_data = false, repsend = false, s_redy=false;
 volatile bool loop_en=true, selfup=false, lcdbackl=true, data_get=true, narodmon_send=false, loop_u_new=0;
 
@@ -319,6 +320,7 @@ void setup() {
          "Int DHT S Temp: %.2f%cC\n"
          "Int DHT S Haetindex: %.2f%cC\n"
          "Time from start: %lu hours %lu minutes %lu Sec, and %lu days \n"
+         "Time now: %lu hours %lu minutes %lu Sec, and %lu days \n"
          "ESP Chip ID: %X\n"
          "Flash id: %X\n"
          "Flash real size: %d\n"
@@ -342,6 +344,7 @@ void setup() {
 		 dht.computeHeatIndex(idht_temp, idht_hum, false), 0xB0, s_redy, tidht_hum,
 		 0x25, tidht_temp, 0xB0, dht.computeHeatIndex(tidht_temp, tidht_hum, false),
 		 0xB0, numberOfHours(tfs), numberOfMinutes(tfs), numberOfSeconds(tfs), elapsedDays(tfs),
+		 numberOfHours(epoch), numberOfMinutes(epoch), numberOfSeconds(epoch), elapsedDays(epoch),
 		 ESP.getChipId(), ESP.getFlashChipId(), ESP.getFlashChipRealSize(), ESP.getFlashChipSize(), ESP.getFlashChipSpeed(),
 		 (ESP.getFlashChipMode() == FM_QIO ? "QIO" : ESP.getFlashChipMode() == FM_QOUT ? "QOUT" : ESP.getFlashChipMode() == FM_DIO ? "DIO" : ESP.getFlashChipMode() == FM_DOUT ? "DOUT" : "UNKNOWN"),
 		 ESP.getResetReason().c_str(), ESP.getResetS(), ESP.getResetInfo().c_str(), WiFi.status(),
@@ -406,6 +409,9 @@ void setup() {
             WiFi.disconnect(false);
             WiFi.begin(wname.c_str(), wpass.c_str());
           }
+		if (server.arg("narodmon_nts") != "") {
+            narodmon_nts = tobool(server.arg("narodmon_nts").c_str());
+        }
         if (server.arg("net_name") != "") {
         if (server.arg("pass") != "") {
               wname = server.arg("net_name");
@@ -540,7 +546,7 @@ void loop() {
     delay(1000);
 
     if(loop_i > 10){
-        httpRequest();
+        //httpRequest();
         loop_i = 0;
         loop_u++;
 		loop_u_new=1;
@@ -669,7 +675,7 @@ void loop() {
         // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
         const unsigned long seventyYears = 2208988800UL;
         // subtract seventy years:
-        unsigned long epoch = secsSince1900 - seventyYears;
+        epoch = secsSince1900 - seventyYears;
         //srlcd.setCursor(0,0);
 		//srlcd.print(dht.computeHeatIndex(idht_temp, idht_hum, false));
         //srlcd.setCursor(5,0);
@@ -915,7 +921,7 @@ bool loadConfig() {
     }
 	
     lcdbacklset(tobool(json["lcdbackl"]));
-
+	narodmon_nts = tobool(json["narodmon_nts"]);
 	 
     return true;
   }
@@ -931,6 +937,7 @@ bool saveConfig() {
     json["lcdbackl"] = lcdbacklset();
     json["wname"] = wname;
     json["wpass"] = wpass;
+	json["narodmon_nts"] = narodmon_nts;
     json.printTo(configFile);
 	configFile.close();
     return true;
@@ -1018,7 +1025,13 @@ bool NAROD_data_send(char *str,short int size) {
 }
 
 void data_send_f() {
-	narodmon_send = true;
+	if(on_boot == true) {
+		on_boot = false;
+		return;
+	}
+	if(narodmon_nts == true) {
+		narodmon_send = true;
+	}
 	return;
 }
 
